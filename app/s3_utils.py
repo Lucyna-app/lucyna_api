@@ -15,10 +15,13 @@ s3_client = boto3.client(
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 
 
-async def upload_file(file: UploadFile):
+def upload_file(file: UploadFile, filename="NULL"):
+    # Use default filename if no filename specified
+    if filename == "NULL":
+        filename = file.filename
     try:
-        s3_client.upload_fileobj(file.file, BUCKET_NAME, file.filename)
-        return {"message": f"File {file.filename} uploaded successfully."}
+        s3_client.upload_fileobj(file.file, BUCKET_NAME, filename)
+        return {"message": f"File {filename} uploaded successfully."}
     except ClientError as e:
         return {"error": str(e)}
 

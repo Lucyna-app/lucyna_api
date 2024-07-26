@@ -1,22 +1,29 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse
-from app.s3_utils import upload_file, download_file
-from typing import Union
-import io
-import uvicorn
-import os
+from database import init_db
+from s3_utils import upload_file, download_file
+from contextlib import asynccontextmanager
+from routers import character
 
-app = FastAPI()
+import io
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Run at API startup
+    init_db()
+    yield
+    # Run at API shutdown
+
+
+app = FastAPI(lifespan=lifespan)
+
+app.include_router(character.router)
 
 
 @app.get("/")
 def read_root():
-    return {"access key": os.getenv("LUCYNA_API_S3_ACCESS_KEY_ID")}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: Union[str, None] = None):
-    return {"item_id": item_id, "q": q}
+    return {"Hello": "World"}
 
 
 @app.post("/upload/")
