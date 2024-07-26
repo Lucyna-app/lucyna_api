@@ -1,12 +1,9 @@
 import sqlite3
-from dotenv import load_dotenv
 from contextlib import contextmanager
 import os
 
-load_dotenv()
-
-
-DB_LOCATION = os.getenv("DB_LOCATION")
+# Join the directory of (folder one level outside of current file) with ("lucyna.db")
+DB_LOCATION = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lucyna.db")
 
 
 @contextmanager

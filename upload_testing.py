@@ -19,7 +19,7 @@ def send_upload_post_request(
     if not dry_run:
         # Send the POST request
         response = requests.post(
-            "http://127.0.0.1:8000/upload/character", data=data, files=files
+            "http://127.0.0.1:8000/create_complete_character", data=data, files=files
         )
 
         # Print the response status code and text

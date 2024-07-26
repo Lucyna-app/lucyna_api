@@ -1,11 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import StreamingResponse
-from database import init_db
-from s3_utils import upload_file, download_file
 from contextlib import asynccontextmanager
-from routers import character
-
 import io
+
+from .database import init_db
+from .s3_utils import upload_file, download_file
+from .routers import base, character, series, art
 
 
 @asynccontextmanager
@@ -18,7 +18,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+app.include_router(base.router)
 app.include_router(character.router)
+app.include_router(series.router)
+app.include_router(art.router)
 
 
 @app.get("/")
