@@ -5,7 +5,7 @@ import io
 
 from .database import init_db
 from .s3_utils import upload_file, download_file
-from .routers import base, character, series, art
+from .routers import base, character, series, art, bot
 
 
 @asynccontextmanager
@@ -22,6 +22,7 @@ app.include_router(base.router)
 app.include_router(character.router)
 app.include_router(series.router)
 app.include_router(art.router)
+app.include_router(bot.router)
 
 
 @app.get("/")

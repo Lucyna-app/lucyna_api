@@ -14,6 +14,7 @@ async def create_character(
     character_name: Annotated[str, Form()],
     series_name: Annotated[str, Form()],
     rarity: Annotated[int, Form()],
+    uuid: str = gen_uuid(),
 ):
     try:
         with sqlite_connection() as con:
@@ -21,7 +22,7 @@ async def create_character(
 
             cur.execute(
                 "INSERT INTO character VALUES (:uuid, :name, :series, :rarity)",
-                (gen_uuid(), character_name, series_name, rarity),
+                (uuid, character_name, series_name, rarity),
             )
             con.commit()
 

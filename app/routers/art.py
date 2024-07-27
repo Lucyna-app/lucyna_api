@@ -10,11 +10,7 @@ router = APIRouter(prefix="/art", tags=["art"])
 
 
 @router.post("/create")
-async def create_art(
-    character_name: Annotated[str, Form()],
-    series_name: Annotated[str, Form()],
-    art: UploadFile = File(...),
-):
+async def create_art(art: UploadFile = File(...), character_uuid: str = gen_uuid()):
     try:
         with sqlite_connection() as con:
             cur = con.cursor()
@@ -22,8 +18,8 @@ async def create_art(
             art_uuid = gen_uuid()
             upload_file(art, art_uuid)
             cur.execute(
-                "INSERT INTO art VALUES (:uuid, :character, :series)",
-                (art_uuid, character_name, series_name),
+                "INSERT INTO art VALUES (:uuid, :character_uuid)",
+                (art_uuid, character_uuid),
             )
 
             con.commit()

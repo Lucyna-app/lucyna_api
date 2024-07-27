@@ -3,12 +3,12 @@ from contextlib import contextmanager
 import os
 
 # Join the directory of (folder one level outside of current file) with ("lucyna.db")
-DB_LOCATION = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lucyna.db")
+DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "lucyna.db")
 
 
 @contextmanager
 def sqlite_connection():
-    conn = sqlite3.connect(DB_LOCATION)
+    conn = sqlite3.connect(DB_PATH)
     try:
         yield conn
     finally:
@@ -54,10 +54,8 @@ def init_db():
 
         CREATE TABLE IF NOT EXISTS "art" (
             "uuid" TEXT PRIMARY KEY,
-            "character" TEXT NOT NULL,
-            "series" TEXT NOT NULL,
-            FOREIGN KEY("character") REFERENCES "character"("uuid"),
-            FOREIGN KEY("series") REFERENCES "series"("uuid")
+            "character_uuid" TEXT NOT NULL,
+            FOREIGN KEY("character_uuid") REFERENCES "character"("uuid")
         );
 
         CREATE TABLE IF NOT EXISTS "series_alias" (
