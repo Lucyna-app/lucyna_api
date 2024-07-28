@@ -20,17 +20,17 @@ def init_db():
         cur = con.cursor()
         cur.executescript("""
         CREATE TABLE IF NOT EXISTS "border" (
-            "uuid" TEXT NOT NULL UNIQUE,
+            "uuid4" TEXT NOT NULL UNIQUE,
             "name" TEXT NOT NULL,
             "rarity" INTEGER NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS "character_alias" (
-            "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-            "character_id" TEXT NOT NULL,
+            "uuid4" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "character_uuid4" TEXT NOT NULL,
             "alias" TEXT NOT NULL,
             "language" TEXT NOT NULL,
-            FOREIGN KEY("character_id") REFERENCES "character"("uuid")
+            FOREIGN KEY("character_uuid4") REFERENCES "character"("uuid4")
         );
 
         CREATE TABLE IF NOT EXISTS "user" (
@@ -40,30 +40,30 @@ def init_db():
             "claim_count" INTEGER,
             "vote_count" INTEGER,
             "daily_count" INTEGER,
-            "favorite_series" TEXT,
-            "favorite_card" TEXT
+            "favorite_series_uuid4" TEXT,
+            "favorite_card_uuid4" TEXT
         );
 
         CREATE TABLE IF NOT EXISTS "character" (
-            "uuid" TEXT PRIMARY KEY,
+            "uuid4" TEXT PRIMARY KEY,
             "name" TEXT NOT NULL,
-            "series" TEXT NOT NULL,
+            "series_uuid4" TEXT NOT NULL,
             "rarity" INTEGER NOT NULL,
-            FOREIGN KEY("series") REFERENCES "series"("uuid")
+            FOREIGN KEY("series_uuid4") REFERENCES "series"("uuid4")
         );
 
         CREATE TABLE IF NOT EXISTS "art" (
-            "uuid" TEXT PRIMARY KEY,
-            "character_uuid" TEXT NOT NULL,
-            FOREIGN KEY("character_uuid") REFERENCES "character"("uuid")
+            "uuid4" TEXT PRIMARY KEY,
+            "character_uuid4" TEXT NOT NULL,
+            FOREIGN KEY("character_uuid4") REFERENCES "character"("uuid4")
         );
 
         CREATE TABLE IF NOT EXISTS "series_alias" (
-            "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-            "series_id" TEXT NOT NULL,
+            "uuid4" INTEGER PRIMARY KEY AUTOINCREMENT,
+            "series_uuid4" TEXT NOT NULL,
             "alias" TEXT NOT NULL,
             "language" TEXT NOT NULL,
-            FOREIGN KEY("series_id") REFERENCES "series"("uuid")
+            FOREIGN KEY("series_uuid4") REFERENCES "series"("uuid4")
         );
 
         CREATE TABLE IF NOT EXISTS "configuration" (
@@ -72,23 +72,23 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS "series" (
-            "uuid" TEXT PRIMARY KEY,
+            "uuid4" TEXT PRIMARY KEY,
             "name" TEXT NOT NULL
         );
 
         CREATE TABLE IF NOT EXISTS "cards" (
-            "uuid" TEXT PRIMARY KEY,
+            "uuid4" TEXT PRIMARY KEY,
             "discord_id" TEXT NOT NULL,
             "custom_code" TEXT,
-            "character" TEXT NOT NULL,
-            "series" TEXT NOT NULL,
-            "art" TEXT NOT NULL,
-            "border" TEXT NOT NULL,
+            "character_uuid4" TEXT NOT NULL,
+            "series_uuid4" TEXT NOT NULL,
+            "art_uuid4" TEXT NOT NULL,
+            "border_uuid4" TEXT NOT NULL,
             "tag" TEXT,
             "claim_time" DATETIME NOT NULL,
-            FOREIGN KEY("border") REFERENCES "border"("uuid"),
+            FOREIGN KEY("border_uuid4") REFERENCES "border"("uuid4"),
             FOREIGN KEY("discord_id") REFERENCES "user"("discord_id"),
-            FOREIGN KEY("character") REFERENCES "character"("uuid"),
-            FOREIGN KEY("art") REFERENCES "art"("uuid"),
-            FOREIGN KEY("series") REFERENCES "series"("uuid")
+            FOREIGN KEY("character_uuid4") REFERENCES "character"("uuid4"),
+            FOREIGN KEY("art_uuid4") REFERENCES "art"("uuid4"),
+            FOREIGN KEY("series_uuid4") REFERENCES "series"("uuid4")
         );""")
