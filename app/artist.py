@@ -1,38 +1,71 @@
 from PIL import Image, ImageDraw, ImageFont
+from .utils import load_image
 import io
 import os
 
-FONT_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dystopian.otf")
+FONT_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/cinzel_regular.otf"
+)
+BORDER_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/base_border.png"
+)
+RARITY_1_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/rarity_1.png"
+)
+RARITY_2_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/rarity_2.png"
+)
+RARITY_3_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/rarity_3.png"
+)
+RARITY_4_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/rarity_4.png"
+)
+RARITY_5_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(__file__)), "assets/rarity_5.png"
+)
 
 
 def draw_text_on_image(
-    image: Image.Image, character_name: str, series_name: str
+    image: Image.Image, character_name: str, series_name: str, rarity: int
 ) -> Image.Image:
+    border_image = load_image(BORDER_PATH)
+    image.paste(border_image, (0, 0), border_image)
+
     draw = ImageDraw.Draw(image)
-    font = ImageFont.truetype(FONT_PATH, 20)
+    font = ImageFont.truetype(FONT_PATH, 30)
 
-    draw.text((10, 10), series_name, font=font, fill=(255, 255, 255))
+    # Calculate position for centered character name at the bottom
+    text_bbox = font.getbbox(character_name)
+    text_width = text_bbox[2] - text_bbox[0]
+    text_height = text_bbox[3] - text_bbox[1]
+    text_position = ((image.width - text_width) // 2, image.height - text_height - 30)
 
-    text_width = draw.textlength(character_name, font=font)
-    draw.text(
-        (image.width - text_width - 10, image.height - 30),
-        character_name,
-        font=font,
-        fill=(255, 255, 255),
+    draw.text(text_position, character_name, font=font, fill=(255, 251, 203))
+
+    symbol_size = (30, 30)  # Adjust as needed
+    rarity_symbol = load_image(RARITY_5_PATH)
+    symbol_position = (
+        (image.width - symbol_size[0]) // 2 - 6,
+        text_position[1] - symbol_size[1] - 4,
     )
+    image.paste(rarity_symbol, symbol_position, rarity_symbol)
 
     return image
 
 
 def combine_images(images: list[Image.Image]) -> bytes:
-    total_width = sum(img.width for img in images)
+    padding = 10
+    total_width = sum(img.width for img in images) + padding * (len(images) - 1)
     max_height = max(img.height for img in images)
 
-    combined_image = Image.new("RGB", (total_width, max_height))
+    combined_image = Image.new("RGBA", (total_width, max_height), (0, 0, 0, 0))
     x_offset = 0
     for img in images:
-        combined_image.paste(img, (x_offset, 0))
-        x_offset += img.width
+        if img.mode != "RGBA":
+            img = img.convert("RGBA")
+        combined_image.paste(img, (x_offset, 0), img)
+        x_offset += img.width + padding
 
     img_byte_arr = io.BytesIO()
     combined_image.save(img_byte_arr, format="PNG")

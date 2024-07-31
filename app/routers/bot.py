@@ -41,58 +41,54 @@ class CollectionResponse(BaseModel):
 
 @router.get("/commands/roll", response_model=RollResponse)
 async def roll_command():
-    try:
-        with sqlite_connection() as con:
-            cur = con.cursor()
+    with sqlite_connection() as con:
+        cur = con.cursor()
 
-            cur.execute(
-                """
-                SELECT character.uuid4, character.name, series.name, character.rarity, art.uuid4 AS art_uuid4
-                FROM character
-                JOIN art ON character.uuid4 = art.character_uuid4
-                JOIN series ON character.series_uuid4 = series.uuid4
-                ORDER BY RANDOM()
-                LIMIT 3
-                """
+        cur.execute(
+            """
+            SELECT character.uuid4, character.name, series.name, character.rarity, art.uuid4 AS art_uuid4
+            FROM character
+            JOIN art ON character.uuid4 = art.character_uuid4
+            JOIN series ON character.series_uuid4 = series.uuid4
+            ORDER BY RANDOM()
+            LIMIT 3
+            """
+        )
+        characters = cur.fetchall()
+
+        if not characters:
+            raise HTTPException(status_code=404, detail="No characters found")
+
+        processed_images = []
+        art_uuid4s = []
+        for character in characters:
+            character_uuid4, character_name, series_name, rarity, art_uuid4 = character
+            image_data = download_file(art_uuid4)
+
+            if isinstance(image_data, dict) and "error" in image_data:
+                print(
+                    f"Error fetching image for art UUID4 {art_uuid4}: {image_data['error']}"
+                )
+                continue
+
+            image = Image.open(io.BytesIO(image_data))
+
+            image_with_text = draw_text_on_image(
+                image, character_name, series_name, rarity
             )
-            characters = cur.fetchall()
+            processed_images.append(image_with_text)
+            art_uuid4s.append(art_uuid4)
 
-            if not characters:
-                raise HTTPException(status_code=404, detail="No characters found")
+        if not processed_images:
+            raise HTTPException(
+                status_code=404, detail="No images found for characters"
+            )
 
-            processed_images = []
-            art_uuid4s = []
-            for character in characters:
-                character_uuid4, character_name, series_name, rarity, art_uuid4 = (
-                    character
-                )
-                image_data = download_file(art_uuid4)
+        combined_image_bytes = combine_images(processed_images)
 
-                if isinstance(image_data, dict) and "error" in image_data:
-                    print(
-                        f"Error fetching image for art UUID4 {art_uuid4}: {image_data['error']}"
-                    )
-                    continue
+        img_str = base64.b64encode(combined_image_bytes).decode()
 
-                image = Image.open(io.BytesIO(image_data))
-
-                image_with_text = draw_text_on_image(image, character_name, series_name)
-                processed_images.append(image_with_text)
-                art_uuid4s.append(art_uuid4)
-
-            if not processed_images:
-                raise HTTPException(
-                    status_code=404, detail="No images found for characters"
-                )
-
-            combined_image_bytes = combine_images(processed_images)
-
-            img_str = base64.b64encode(combined_image_bytes).decode()
-
-            return JSONResponse(content={"image": img_str, "art_uuid4s": art_uuid4s})
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(content={"image": img_str, "art_uuid4s": art_uuid4s})
 
 
 @router.post("/commands/roll/claim")

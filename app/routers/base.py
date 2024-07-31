@@ -6,7 +6,6 @@ from ..utils import gen_uuid4
 from .character import create_character
 from .series import create_series
 from .art import create_art
-from ..database import sqlite_connection
 
 router = APIRouter()
 
@@ -27,28 +26,3 @@ async def create_complete_character(
         return {"message": "Full character record created successfully"}
     except ClientError as e:
         return {"error": str(e)}
-
-
-# Depracated for now
-@router.post("/fetch_three_characters")
-async def fetch_three_characters() -> List[dict]:
-    try:
-        with sqlite_connection() as con:
-            cur = con.cursor()
-
-            cur.execute(
-                "SELECT uuid4, name, series_uuid4 FROM character ORDER BY RANDOM() LIMIT 3"
-            )
-            results = cur.fetchall()
-
-            if not results:
-                raise HTTPException(status_code=404, detail="No characters found")
-
-            characters = [
-                {"uuid": uuid4, "name": name, "series_uuid4": series_uuid4}
-                for uuid4, name, series_uuid4 in results
-            ]
-
-            return characters
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
