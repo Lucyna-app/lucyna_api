@@ -35,21 +35,18 @@ def draw_text_on_image(
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype(FONT_PATH, 30)
 
-    # Calculate position for centered character name at the bottom
-    text_bbox = font.getbbox(character_name)
-    text_width = text_bbox[2] - text_bbox[0]
-    text_height = text_bbox[3] - text_bbox[1]
-    text_position = ((image.width - text_width) // 2, image.height - text_height - 30)
+    # Calculate text width
+    bbox = draw.textbbox((0, 0), character_name, font=font)
+    text_width = bbox[2] - bbox[0]
+    text_x = (image.width - text_width) // 2
+    text_y = image.height - 52
 
-    draw.text(text_position, character_name, font=font, fill=(255, 251, 203))
+    draw.text((text_x, text_y), character_name, font=font, fill=(255, 251, 203))
 
     symbol_size = (30, 30)  # Adjust as needed
     rarity_symbol = load_image(RARITY_5_PATH)
-    symbol_position = (
-        (image.width - symbol_size[0]) // 2 - 6,
-        text_position[1] - symbol_size[1] - 4,
-    )
-    image.paste(rarity_symbol, symbol_position, rarity_symbol)
+    rarity_position = (image.width // 2 - symbol_size[0] // 2 - 6, image.height - 85)
+    image.paste(rarity_symbol, rarity_position, rarity_symbol)
 
     return image
 

@@ -10,8 +10,7 @@ router = APIRouter(prefix="/series", tags=["series"])
 
 
 @router.post("/create")
-async def create_series(series_name: Annotated[str, Form()],
-                        series_uuid4 = gen_uuid4()):
+async def create_series(series_name: Annotated[str, Form()], series_uuid4=gen_uuid4()):
     try:
         with sqlite_connection() as con:
             cur = con.cursor()
@@ -36,3 +35,14 @@ async def create_series(series_name: Annotated[str, Form()],
 
     except ClientError as e:
         return {"error": str(e)}
+
+
+@router.get("/read_all")
+async def read_all_series():
+    with sqlite_connection() as con:
+        cur = con.cursor()
+        cur.execute("SELECT * FROM series")
+        series = cur.fetchall()
+        con.close()
+
+        return {"all_series": series}
