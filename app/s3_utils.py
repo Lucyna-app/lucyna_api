@@ -32,3 +32,11 @@ def download_file(file_name: str):
         return response["Body"].read()
     except ClientError as e:
         return {"error": str(e)}
+
+
+def delete_file(file_name: str):
+    try:
+        s3_client.delete_object(Bucket=BUCKET_NAME, Key=file_name)
+        return {"message": f"File {file_name} deleted successfully."}
+    except ClientError as e:
+        return {"error": str(e)}

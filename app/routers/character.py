@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, HTTPException
 from typing import Annotated
 from botocore.exceptions import ClientError
 
