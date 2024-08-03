@@ -1,6 +1,5 @@
 from pathlib import Path
 import requests
-import uuid
 import sys
 
 

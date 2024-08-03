@@ -14,6 +14,7 @@ python-dotenv = "^1.0.1"
 sqlalchemy = "^2.0.31"
 requests = "^2.32.3"
 pillow = "^10.4.0"
+fastapi-cors = "^0.0.6"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.5.4"
