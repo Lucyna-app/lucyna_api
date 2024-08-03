@@ -4,7 +4,7 @@ from botocore.exceptions import ClientError
 
 from ..database import sqlite_connection
 from ..utils import gen_uuid4
-from ..s3_utils import delete_file
+from ..s3_utils import delete_file, get_presigned_url
 
 
 router = APIRouter(prefix="/series", tags=["series"])
@@ -74,9 +74,12 @@ async def get_character_details(series_uuid4: str, character_uuid4: str):
         character = cur.fetchone()
         if not character:
             raise HTTPException(status_code=404, detail="Character not found")
-        cur.execute("SELECT * FROM art WHERE character_uuid4 = ?", (character_uuid4,))
+        cur.execute(
+            "SELECT uuid4 FROM art WHERE character_uuid4 = ?", (character_uuid4,)
+        )
         arts = cur.fetchall()
-    return {"character": character, "arts": arts}
+        art_urls = [get_presigned_url(art[0]) for art in arts]
+    return {"character": character, "art_urls": art_urls}
 
 
 @router.put("/{series_uuid4}/character/{character_uuid4}")
@@ -117,6 +120,11 @@ async def delete_character(series_uuid4: str, character_uuid4: str):
             # Delete art records
             cur.execute("DELETE FROM art WHERE character_uuid4 = ?", (character_uuid4,))
 
+            # Delete cards associated with the character
+            cur.execute(
+                "DELETE FROM cards WHERE character_uuid4 = ?", (character_uuid4,)
+            )
+
             # Delete character
             cur.execute(
                 "DELETE FROM character WHERE uuid4 = ? AND series_uuid4 = ?",
@@ -128,6 +136,6 @@ async def delete_character(series_uuid4: str, character_uuid4: str):
 
             con.commit()
 
-        return {"message": "Character and associated art deleted successfully"}
+        return {"message": "Character, associated art, and cards deleted successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
