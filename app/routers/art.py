@@ -1,4 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from PIL import Image
+import io
 from botocore.exceptions import ClientError
 
 from ..database import sqlite_connection
@@ -34,3 +36,22 @@ async def create_art(art: UploadFile = File(...), character_uuid4: str = Form(..
 
     except ClientError as e:
         return {"error": str(e)}
+
+
+@router.put("/update/{art_uuid4}")
+async def update_art(art_uuid4: str, art: UploadFile = File(...)):
+    try:
+        # Validate dimensions
+        image = Image.open(io.BytesIO(await art.read()))
+        if image.size != (375, 525):
+            raise HTTPException(status_code=400, detail="Image must be 375x525 pixels")
+
+        # Reset file pointer
+        await art.seek(0)
+
+        # Overwrite S3 file
+        upload_file(art, art_uuid4)
+
+        return {"message": f"Art {art_uuid4} updated successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
